@@ -7,5 +7,12 @@
     <string name="title_section3">Section 3</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="username">username</string>
+    <string name="password">password</string>
+    <string name="login_btn">Login</string>
+    <string name="first_run_pref_key">first_run_pref_key</string>
+    <string name="service_not_available">Unable to contact service</string>
+    <string name="login_failed">Login failed - check your credentials</string>
 
 </resources>

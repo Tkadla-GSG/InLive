@@ -1,4 +1,4 @@
-package cz.inlive.inlive;
+package cz.inlive.inlive.activity;
 
 import java.util.Locale;
 
@@ -7,16 +7,19 @@ import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+
+import cz.inlive.inlive.R;
 
 
 public class LandingPageActivity extends Activity implements ActionBar.TabListener {
@@ -41,9 +44,19 @@ public class LandingPageActivity extends Activity implements ActionBar.TabListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landing_page);
 
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        final boolean firstRun = prefs.getBoolean(getResources().getString(R.string.first_run_pref_key), true);
+        if( firstRun ){
+            Intent i = new Intent(this, LoginActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(i);
+        }
+
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        if(actionBar != null) {
+            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        }
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
