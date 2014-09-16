@@ -1,8 +1,92 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme.Holo.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <style name="AppTheme" parent="@android:style/Theme.Holo">
+        <item name="android:actionBarItemBackground">@drawable/selectable_background_inlive</item>
+        <item name="android:popupMenuStyle">@style/PopupMenu.Inlive</item>
+        <item name="android:dropDownListViewStyle">@style/DropDownListView.Inlive</item>
+        <item name="android:actionBarTabStyle">@style/ActionBarTabStyle.Inlive</item>
+        <item name="android:actionDropDownStyle">@style/DropDownNav.Inlive</item>
+        <item name="android:actionBarStyle">@style/ActionBar.Solid.Inlive</item>
+        <item name="android:actionModeBackground">@drawable/cab_background_top_inlive</item>
+        <item name="android:actionModeSplitBackground">@drawable/cab_background_bottom_inlive</item>
+        <item name="android:actionModeCloseButtonStyle">@style/ActionButton.CloseMode.Inlive</item>
+        <item name="android:windowContentOverlay">@null</item>
+
+        <item name="android:textViewStyle">@style/AppTheme.TextView</item>
+    </style>
+
+    <style name="AppTheme.TextView" parent="android:Widget.TextView">
+        <item name="android:textColor">@color/akcent_dark_grey</item>
+    </style>
+
+    <!-- http://jgilfelt.github.io/android-actionbarstylegenerator/#name=inlive&compat=holo&theme=dark&actionbarstyle=solid&texture=0&hairline=0&neutralPressed=1&backColor=6c3%2C100&secondaryColor=6c3%2C100&tabColor=d2ffbc%2C100&tertiaryColor=6c3%2C100&accentColor=d2ffbc%2C100&cabBackColor=6c3%2C100&cabHighlightColor=d2ffbc%2C100 -->
+
+    <style name="AppTheme.LoginTextView" parent="android:TextAppearance">
+        <item name="android:background">@drawable/login_textview_normal</item>
+        <item name="android:textColor">@color/akcent_white</item>
+        <item name="android:textColorHint">@color/akcent_white</item>
+        <item name="android:textCursorDrawable">@null</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:layout_margin">4dp</item>
+    </style>
+
+    <style name="AppTheme.LoginButton" parent="android:TextAppearance">
+        <item name="android:background">@drawable/login_button</item>
+        <item name="android:textColor">@color/akcent_white</item>
+        <item name="android:textColorHint">@color/akcent_white</item>
+        <item name="android:textCursorDrawable">@null</item>
+        <item name="android:padding">4dp</item>
+        <item name="android:layout_margin">4dp</item>
+    </style>
+
+    <style name="ActionBar.Solid.Inlive" parent="@android:style/Widget.Holo.ActionBar.Solid">
+        <!--<item name="android:background">@drawable/ab_solid_inlive</item>
+        <item name="android:backgroundStacked">@drawable/ab_stacked_solid_inlive</item>
+        <item name="android:backgroundSplit">@drawable/ab_bottom_solid_inlive</item>-->
+
+        <item name="android:background">@color/akcent_green</item>
+        <item name="android:backgroundStacked">@color/akcent_green</item>
+        <item name="android:backgroundSplit">@color/akcent_green</item>
+
+        <item name="android:progressBarStyle">@style/ProgressBar.Inlive</item>
+    </style>
+
+    <style name="ActionBar.Transparent.Inlive" parent="@android:style/Widget.Holo.ActionBar">
+        <item name="android:background">@drawable/ab_transparent_inlive</item>
+        <item name="android:progressBarStyle">@style/ProgressBar.Inlive</item>
+    </style>
+
+    <style name="PopupMenu.Inlive" parent="@android:style/Widget.Holo.ListPopupWindow">
+        <item name="android:popupBackground">@drawable/menu_dropdown_panel_inlive</item>
+    </style>
+
+    <style name="DropDownListView.Inlive" parent="@android:style/Widget.Holo.ListView.DropDown">
+        <item name="android:listSelector">@drawable/selectable_background_inlive</item>
+    </style>
+
+    <style name="ActionBarTabStyle.Inlive" parent="@android:style/Widget.Holo.ActionBar.TabView">
+        <item name="android:background">@drawable/tab_indicator_ab_inlive</item>
+    </style>
+
+    <style name="DropDownNav.Inlive" parent="@android:style/Widget.Holo.Spinner">
+        <item name="android:background">@drawable/spinner_background_ab_inlive</item>
+        <item name="android:popupBackground">@drawable/menu_dropdown_panel_inlive</item>
+        <item name="android:dropDownSelector">@drawable/selectable_background_inlive</item>
+    </style>
+
+    <style name="ProgressBar.Inlive" parent="@android:style/Widget.Holo.ProgressBar.Horizontal">
+        <item name="android:progressDrawable">@drawable/progress_horizontal_inlive</item>
+    </style>
+
+    <style name="ActionButton.CloseMode.Inlive" parent="@android:style/Widget.Holo.ActionButton.CloseMode">
+        <item name="android:background">@drawable/btn_cab_done_inlive</item>
+    </style>
+
+    <!-- this style is only referenced in a Light.DarkActionBar based theme -->
+    <style name="Theme.Inlive.Widget" parent="@android:style/Theme.Holo">
+        <item name="android:popupMenuStyle">@style/PopupMenu.Inlive</item>
+        <item name="android:dropDownListViewStyle">@style/DropDownListView.Inlive</item>
     </style>
 
 </resources>

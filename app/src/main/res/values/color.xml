@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="akcent_black">#000000</color>
+    <color name="akcent_dark_grey" >#464646</color>
+    <color name="akcent_green" >#66cc33</color>
+    <color name="akcent_light_green">#d2ffbc</color>
+    <color name="akcent_grey">#e0e1e3</color>
+    <color name="akcent_light_grey" >#eaebec</color>
+    <color name="akcent_white" >#ffffff</color>
+
+    <color name="akcent_dark_grey_20">#44464646</color>
+    <color name="akcent_dark_grey_50">#AA464646</color>
+
+</resources>
