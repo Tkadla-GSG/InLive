@@ -58,7 +58,7 @@ public class NetworkHandler {
        JsonObjectRequest jsonObjectRequest = null;
 
        // create request with specified credentials
-       jsonObjectRequest = new ApiRequest(Request.Method.POST, url, request, new Response.Listener<JSONObject>() {
+       jsonObjectRequest = new LoginRequest(Request.Method.POST, url, request, new Response.Listener<JSONObject>() {
            @Override
            public void onResponse(JSONObject response) {
                resp.onResponse(0, response);
@@ -83,6 +83,53 @@ public class NetworkHandler {
        // add request to queue
        this.mRequestQueue.add(jsonObjectRequest);
    }
+
+    public void handleBetsUpdate( final JSONObjectResponse resp, long last_update, String username, String password ){
+
+        String url = Constants.URL_BASE;
+
+        JSONObject request = new JSONObject();
+        JSONObject payload = new JSONObject();
+
+        try {
+
+            payload.put("update_timestamp", last_update/1000); //convert milies to unixtimestamp
+
+            request.put("method", "matches");
+            request.put("payload", payload);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsonObjectRequest = null;
+
+        // create request with specified credentials
+        jsonObjectRequest = new LoginRequest(Request.Method.POST, url, request, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                resp.onResponse(0, response);
+                Log.d(TAG, "Response: " + response.toString());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                resp.onError(0, error);
+                Log.e(TAG, error.toString());
+            }
+        }
+                ,username, password );
+
+        Log.d(TAG, request.toString());
+
+        // try to get answer for max 10000 milies with maximum retries
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // add request to queue
+        this.mRequestQueue.add(jsonObjectRequest);
+    }
 
 
 }

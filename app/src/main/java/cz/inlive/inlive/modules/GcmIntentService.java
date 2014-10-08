@@ -11,22 +11,34 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import cz.inlive.inlive.InLiveApplication;
 import cz.inlive.inlive.R;
 import cz.inlive.inlive.activity.LandingPageActivity;
 import cz.inlive.inlive.activity.LoginActivity;
+import cz.inlive.inlive.database.DatabaseHandler;
+import cz.inlive.inlive.database.objects.Info;
+import cz.inlive.inlive.utils.Constants;
 
 public class GcmIntentService extends IntentService {
 
     private String TAG = "GcmIntentService";
     public static final int NOTIFICATION_ID = 1;
+
+    private DatabaseHandler mDatabaseHandler;
+
     private NotificationManager mNotificationManager;
     NotificationCompat.Builder builder;
+
 
     public GcmIntentService() {
         super("GcmIntentService");
@@ -49,11 +61,11 @@ public class GcmIntentService extends IntentService {
              */
             if (GoogleCloudMessaging.
                     MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
-                sendNotification("Send error: " + extras.toString());
+                /*sendNotification("Send error: " + extras.toString());*/
             } else if (GoogleCloudMessaging.
                     MESSAGE_TYPE_DELETED.equals(messageType)) {
-                sendNotification("Deleted messages on server: " +
-                        extras.toString());
+                /*sendNotification("Deleted messages on server: " +
+                        extras.toString());*/
                 // If it's a regular GCM message, do some work.
             } else if (GoogleCloudMessaging.
                     MESSAGE_TYPE_MESSAGE.equals(messageType)) {
@@ -67,12 +79,53 @@ public class GcmIntentService extends IntentService {
                     }
                 }
                 Log.i(TAG, "Completed work @ " + SystemClock.elapsedRealtime());
-                // Post notification of received message.
-                sendNotification(extras.getString("message"));
+                // get JSON from notification
 
-                //todo persist in DB
+                String gcmMessage = extras.getString("message");
 
-                Log.i(TAG, "Received: " + extras.toString());
+                Log.d(TAG, "message received : " + gcmMessage);
+
+                // Looking for this pattern
+                //{"result":{"message":"Test TEst","type":"info"}}
+                if(gcmMessage != null && !gcmMessage.isEmpty()) {
+
+                    try {
+                        JSONObject object = new JSONObject(gcmMessage);
+
+                        if(object.has("result") && !object.isNull("result")) {
+                            //retype object to allow check for "result"
+                            object = object.getJSONObject("result");
+                        }
+
+                        if(object.has("message") && !object.isNull("message")){
+
+                            // Post notification of received message.
+                            sendNotification(object.getString("message"));
+
+                            if(object.has("type") && !object.isNull("type")){
+                                String type = object.getString("type");
+
+                                if(Constants.TYPE_INFO.equals(type)){
+                                    // this is indeed valid message from server and i should persist it in DB
+                                    Info info = new Info();
+                                    info.parseJSON(object);
+                                    info.setReceived(System.currentTimeMillis());
+
+                                    mDatabaseHandler = ((InLiveApplication)getApplication()).getDatabaseHandler();
+
+                                    mDatabaseHandler.saveInfo(info);
+                                }
+
+                            }
+
+                            Log.i(TAG, "Received: " + extras.toString());
+
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
         // Release the wake lock provided by the WakefulBroadcastReceiver.
@@ -90,11 +143,11 @@ public class GcmIntentService extends IntentService {
 
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle("Notification")
-                        .setContentText("" + msg)
+                        .setSmallIcon(R.drawable.ic_action_logo)
+                        .setContentText("" + R.string.new_bet)
                         .setPriority(NotificationCompat.PRIORITY_MAX)
-                        .setSound(alarmSound);
+                        .setSound(alarmSound)
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(msg));
 
         // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(this, LandingPageActivity.class);
@@ -117,8 +170,15 @@ public class GcmIntentService extends IntentService {
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         // mId allows you to update the notification later on.
-        mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+        Notification notification = mBuilder.build();
+        notification.defaults |= Notification.DEFAULT_SOUND;
+        notification.defaults |= Notification.DEFAULT_VIBRATE;
+        notification.defaults |= Notification.FLAG_SHOW_LIGHTS;
+        notification.ledOnMS = 200;
+        notification.ledOffMS = 200;
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
 
+        mNotificationManager.notify(NOTIFICATION_ID, notification);
 
     }
 }

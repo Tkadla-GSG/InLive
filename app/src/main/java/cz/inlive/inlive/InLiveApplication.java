@@ -42,4 +42,6 @@ public class InLiveApplication extends Application {
     public NetworkHandler getNetworkHandler() {
         return mNetworkHandler;
     }
+
+    public DatabaseHandler getDatabaseHandler() {return mDatabaseHandler; }
 }

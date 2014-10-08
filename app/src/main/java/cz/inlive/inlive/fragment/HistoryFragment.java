@@ -1,20 +1,38 @@
 package cz.inlive.inlive.fragment;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.VolleyError;
+
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
+import cz.inlive.inlive.InLiveApplication;
 import cz.inlive.inlive.R;
 
-import cz.inlive.inlive.fragment.dummy.DummyContent;
+import cz.inlive.inlive.adapter.BetArrayAdapter;
+import cz.inlive.inlive.database.DatabaseHandler;
+import cz.inlive.inlive.database.objects.Bet;
 import cz.inlive.inlive.listeners.BetFragmentInteractionListener;
+import cz.inlive.inlive.network.JSONObjectResponse;
+import cz.inlive.inlive.network.NetworkHandler;
+import cz.inlive.inlive.utils.Log;
 
 /**
  * A fragment representing a list of Items.
@@ -25,16 +43,7 @@ import cz.inlive.inlive.listeners.BetFragmentInteractionListener;
  * Activities containing this fragment MUST implement the Callbacks
  * interface.
  */
-public class HistoryFragment extends Fragment implements AbsListView.OnItemClickListener {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+public class HistoryFragment extends Fragment {
 
     private BetFragmentInteractionListener mListener;
 
@@ -49,13 +58,14 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
      */
     private ListAdapter mAdapter;
 
+    private ArrayList<Bet> mBets;
+
+    private DatabaseHandler mDatabaseHandler;
+    private NetworkHandler mNetworkHandler;
+
     // TODO: Rename and change types of parameters
-    public static HistoryFragment newInstance(String param1, String param2) {
+    public static HistoryFragment newInstance() {
         HistoryFragment fragment = new HistoryFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
         return fragment;
     }
 
@@ -70,27 +80,31 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        mNetworkHandler = ((InLiveApplication)getActivity().getApplication()).getNetworkHandler();
+        mDatabaseHandler = ((InLiveApplication)getActivity().getApplication()).getDatabaseHandler();        mDatabaseHandler = ((InLiveApplication)getActivity().getApplication()).getDatabaseHandler();
 
-        // TODO: Change Adapter to display your content
-        mAdapter = new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS);
+        mBets = mDatabaseHandler.getBets(0, 60);
+
+        // TODO make this expandable
+        mAdapter = new BetArrayAdapter(getActivity(),
+                R.layout.layout_bet_list_item, mBets );
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_bet_history, container, false);
+        View view = inflater.inflate(R.layout.fragment_history, container, false);
+
+        final Context mContext = getActivity();
+
+        // hide empty
+        if(mBets.size() > 0){
+            ((TextView)view.findViewById(android.R.id.empty)).setVisibility(View.GONE);
+        }
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
         ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
-
-        // Set OnItemClickListener so we can be notified on item clicks
-        mListView.setOnItemClickListener(this);
 
         return view;
     }
@@ -110,28 +124,5 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
     public void onDetach() {
         super.onDetach();
         mListener = null;
-    }
-
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (null != mListener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
-            mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
-        }
-    }
-
-    /**
-     * The default content for this Fragment has a TextView that is shown when
-     * the list is empty. If you would like to change the text, call this method
-     * to supply the text it should use.
-     */
-    public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
-
-        if (emptyText instanceof TextView) {
-            ((TextView) emptyView).setText(emptyText);
-        }
     }
 }

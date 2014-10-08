@@ -1,19 +1,29 @@
 package cz.inlive.inlive.database;
 
 import android.content.Context;
-import android.database.DatabaseErrorHandler;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
+import cz.inlive.inlive.database.objects.Bet;
+import cz.inlive.inlive.database.objects.Info;
 import cz.inlive.inlive.utils.Log;
+import cz.inlive.inlive.utils.Constants;
 
 /**
  * Created by Tkadla on 15. 9. 2014.
@@ -21,6 +31,10 @@ import cz.inlive.inlive.utils.Log;
 public class DatabaseHandler extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
+
+    //Tables
+    private String TABLE_BET = "bet";
+    private String TABLE_INFO = "info";
 
     private SQLiteDatabase mDatabase;
     private Context mContext;
@@ -188,5 +202,166 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
+    }
+
+    /**
+     * Save info from server (Via GCM)
+     * @param info
+     */
+    public void saveInfo( Info info ){
+        String query = " INSERT INTO " + TABLE_INFO + "(`message`, `type`, `received`) VALUES ( '" + info.getMessage() + "','" + info.getType() +"','" + info.getReceived() +"' )";
+        mDatabase.execSQL(query);
+
+        //keep DB size in check
+        deleteOldInfos();
+    }
+
+    /**
+     * Persist all best in DB
+     * @param bets
+     */
+    public void saveBets(List<Bet> bets){
+        for(Bet bet: bets){
+            saveBet(bet);
+        }
+
+        // keep DB size in check
+        deleteOldBets();
+    }
+
+    private void deleteOldInfos(){
+        String query = "DELETE FROM "+ TABLE_INFO +" WHERE `id` NOT IN (SELECT `id` FROM "+ TABLE_INFO +" ORDER BY `id` DESC LIMIT "+ Constants.MAX_INFO_IN_DB +")";
+        mDatabase.execSQL(query);
+    }
+
+    private void deleteOldBets(){
+        String query = "DELETE FROM "+ TABLE_BET +" WHERE `id` NOT IN (SELECT `id` FROM "+ TABLE_BET +" ORDER BY `id` DESC LIMIT "+ Constants.MAX_BETS_IN_DB +")";
+        mDatabase.execSQL(query);
+    }
+
+    /**
+     * Retreive given number of infos from DB
+     * @param offset - number of pages from start
+     * @param limit - maximum of records to return
+     * @return
+     */
+    public ArrayList<Info> getInfo ( int offset, int limit ){
+        ArrayList<Info> infos = new ArrayList<Info>(limit);
+
+        String query = "SELECT * FROM " + TABLE_INFO + " ORDER BY datetime(`received`) ASC LIMIT " + (offset * Constants.INFO_PER_PAGE) + "," + limit;
+
+        Cursor cursor = mDatabase.rawQuery(query, null);
+
+        if(cursor.moveToFirst()) {
+            do {
+                infos.add(infoFromCursor(cursor));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+
+        return infos;
+    }
+
+    /**
+     * Construct Bets fronm cursor
+     * @param cursor
+     * @return
+     */
+    public ArrayList<Bet> betsFromCursor(Cursor cursor){
+
+        ArrayList<Bet> bets = new ArrayList<Bet>();
+
+        if(cursor.moveToFirst()) {
+
+            do {
+                bets.add(betFromCursor(cursor));
+            }while (cursor.moveToNext());
+
+        }
+
+        return bets;
+    }
+
+    public ArrayList<Bet> betsFromJSON(JSONObject object) throws JSONException{
+
+        ArrayList<Bet> bets = new ArrayList<Bet>();
+
+
+        if( !object.has("result") || object.isNull("result")){
+            return bets;
+        }
+
+        JSONObject result = object.getJSONObject("result");
+
+        if( !result.has("matches") || result.isNull("matches") ){
+            return bets;
+        }
+
+        JSONArray matches = result.getJSONArray("matches");
+
+        for(int index = 0; index < matches.length(); index++){
+            Bet bet = new Bet();
+            bet.parseJSON(matches.getJSONObject(index));
+
+            bets.add(bet);
+        }
+
+        return bets;
+    }
+
+    /**
+     * Construct Bet from cursor
+     * @param cursor
+     * @return
+     */
+    private Bet betFromCursor(Cursor cursor) {
+
+        Bet bet = new Bet();
+        bet.parseCursor(cursor);
+
+        return bet;
+    }
+
+
+    private Info infoFromCursor(Cursor cursor) {
+        Info i = new Info();
+        i.parseCursor(cursor);
+        return i;
+    }
+
+    /**
+     * Save or update bat in DB
+     * @param bet
+     */
+    public void saveBet(Bet bet){
+
+        String query = " INSERT OR REPLACE INTO " + TABLE_BET + " (inlive_id, message, start_timestamp, league, match, tip, score, odd, status, received, type ) " +
+                "VALUES ('" + bet.getInLiveId() +  "'," + DatabaseUtils.sqlEscapeString( bet.getMessage() ) + ",'" + bet.getStart_timestamp() + "'," + DatabaseUtils.sqlEscapeString( bet.getLeague() ) + "," + DatabaseUtils.sqlEscapeString( bet.getMatch() ) + ",'" + bet.getTip() + "','" + bet.getScore() + "','" + bet.getOdd() + "','" + bet.getStatus() + "','" + bet.getReceived() + "','" + bet.getType() + "') ";
+
+        mDatabase.execSQL(query);
+    }
+
+    /**
+     * Get bets with limit
+     * @return
+     */
+    public ArrayList<Bet> getBets( int offset, int limit ){
+        ArrayList<Bet> bets = new ArrayList<Bet>(limit);
+
+        String query = "SELECT * FROM " + TABLE_BET + " ORDER BY `id` ASC LIMIT " + (offset * Constants.INFO_PER_PAGE) + "," + limit;
+
+        Cursor cursor = mDatabase.rawQuery(query, null);
+
+        if(cursor.moveToFirst()) {
+            do {
+                bets.add(betFromCursor(cursor));
+            } while (cursor.moveToNext());
+        }
+
+
+        cursor.close();
+
+        return bets;
     }
 }

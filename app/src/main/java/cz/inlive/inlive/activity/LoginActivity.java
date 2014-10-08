@@ -188,7 +188,7 @@ public class LoginActivity extends Activity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(mContext, R.string.service_not_available, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mContext, R.string.service_not_available, Toast.LENGTH_LONG).show();
                         }
                     });
 
@@ -208,6 +208,10 @@ public class LoginActivity extends Activity {
     private void sendRegistrationIdToBackend(String regid) {
         // login on server
         mToken = regid;
+        // persist token
+        mPrefs.edit().putString(getResources().getString(R.string.token_pref_key), mToken).commit();
+
+        //run login
         login();
     }
 
@@ -230,8 +234,8 @@ public class LoginActivity extends Activity {
 
 
     private void login(){
-        String username = mUsername.getText().toString();
-        String password = mPassword.getText().toString();
+        final String username = mUsername.getText().toString();
+        final String password = mPassword.getText().toString();
 
         ((InLiveApplication) getApplication()).getNetworkHandler().handleLogin(new JSONObjectResponse() {
             @Override
@@ -240,8 +244,18 @@ public class LoginActivity extends Activity {
                 if( result.has("result") && !result.isNull("result") ){
                     // 200 OK, run normal activity
 
+                    //init update timestamp (today - week)
+                    long timestamp = System.currentTimeMillis() - Constants.UPDATE_SLACK;
+
                     // no longer request login action
-                    mPrefs.edit().putBoolean(getResources().getString(R.string.first_run_pref_key), false).commit();
+                    mPrefs.edit().putBoolean(getResources().getString(R.string.first_run_pref_key), false)
+
+                    //persist username and password
+                    .putString(getResources().getString(R.string.username_pref_key), username)
+                    .putString(getResources().getString(R.string.password_pref_key), password)
+
+                    .putLong(getResources().getString(R.string.last_update_pref_key), timestamp).commit();
+
                     //run normal activity
                     Intent i = new Intent(mContext, LandingPageActivity.class);
                     i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -250,7 +264,7 @@ public class LoginActivity extends Activity {
                 }else{
                     // other,
                     onServerCheckEnd();
-                    Toast.makeText(mContext, R.string.login_failed, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext, R.string.login_failed, Toast.LENGTH_LONG).show();
                 }
 
                 Log.d("LoginActivity", result.toString());
@@ -260,7 +274,7 @@ public class LoginActivity extends Activity {
             public void onError(long id, VolleyError volleyError) {
 
                 onServerCheckEnd();
-                Toast.makeText(mContext, R.string.service_not_available, Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, R.string.service_not_available, Toast.LENGTH_LONG).show();
             }
         }, mToken, username, password);
     }

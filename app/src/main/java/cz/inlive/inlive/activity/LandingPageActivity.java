@@ -1,15 +1,21 @@
 package cz.inlive.inlive.activity;
 
+import java.util.Calendar;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import android.app.Activity;
 import android.app.ActionBar;
+import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.provider.SyncStateContract;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
@@ -23,6 +29,9 @@ import cz.inlive.inlive.R;
 import cz.inlive.inlive.fragment.BetFragment;
 import cz.inlive.inlive.fragment.HistoryFragment;
 import cz.inlive.inlive.listeners.BetFragmentInteractionListener;
+import cz.inlive.inlive.modules.UpdateIntentService;
+import cz.inlive.inlive.utils.Log;
+import cz.inlive.inlive.utils.Constants;
 
 
 public class LandingPageActivity extends Activity implements ActionBar.TabListener, BetFragmentInteractionListener {
@@ -54,6 +63,8 @@ public class LandingPageActivity extends Activity implements ActionBar.TabListen
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(i);
         }
+
+        Log.d("ID", prefs.getString("registration_id", "none"));
 
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
@@ -90,6 +101,28 @@ public class LandingPageActivity extends Activity implements ActionBar.TabListen
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
+
+        // start update service
+        setRecurringAlarm(this);
+    }
+
+    private void setRecurringAlarm(Context context) {
+        Calendar updateTime = Calendar.getInstance();
+        updateTime.setTimeZone(TimeZone.getDefault());
+
+        Intent downloader = new Intent(context, UpdateIntentService.class);
+        downloader.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, downloader, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,
+                updateTime.getTimeInMillis(),
+                Constants.UPDATE_DELAY,
+                pendingIntent);
+
+        Log.d("MyActivity", "Set alarmManager.setRepeating to: " + updateTime.getTime().toLocaleString());
+
+        context.startService( new Intent(this, UpdateIntentService.class) );
     }
 
 
@@ -149,13 +182,13 @@ public class LandingPageActivity extends Activity implements ActionBar.TabListen
             switch(position){
 
                 case 0:
-                    return  new BetFragment().newInstance("dummy", "dummy");
+                    return  new BetFragment().newInstance();
 
                 case 1:
-                    return new HistoryFragment().newInstance("dummy", "dummy");
+                    return new HistoryFragment().newInstance();
 
                 default:
-                    return  new BetFragment().newInstance("dummy", "dummy");
+                    return  new BetFragment().newInstance();
 
             }
         }

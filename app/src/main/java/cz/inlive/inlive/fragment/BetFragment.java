@@ -1,15 +1,34 @@
 package cz.inlive.inlive.fragment;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
 
+import com.android.volley.VolleyError;
+
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Collections;
+
+import cz.inlive.inlive.InLiveApplication;
 import cz.inlive.inlive.R;
+import cz.inlive.inlive.adapter.InfoArrayAdapter;
+import cz.inlive.inlive.database.DatabaseHandler;
+import cz.inlive.inlive.database.objects.Info;
 import cz.inlive.inlive.listeners.BetFragmentInteractionListener;
+import cz.inlive.inlive.network.JSONObjectResponse;
+import cz.inlive.inlive.utils.Log;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -21,32 +40,22 @@ import cz.inlive.inlive.listeners.BetFragmentInteractionListener;
  *
  */
 public class BetFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     private BetFragmentInteractionListener mListener;
+
+    private DatabaseHandler mDatabaseHandler;
+
+    private ListView mList;
+    private ArrayAdapter<Info> mAdapter;
 
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment BetFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static BetFragment newInstance(String param1, String param2) {
+    public static BetFragment newInstance() {
         BetFragment fragment = new BetFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
         return fragment;
     }
     public BetFragment() {
@@ -56,24 +65,33 @@ public class BetFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+
+        mDatabaseHandler = ((InLiveApplication)(getActivity().getApplication())).getDatabaseHandler();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_bet, container, false);
-    }
+       View v =  inflater.inflate(R.layout.fragment_bet, container, false);
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri.toString());
-        }
+       mList = ( ListView ) v.findViewById(android.R.id.list);
+
+       //TODO remake as extedable adapter
+       ArrayList<Info> infos = mDatabaseHandler.getInfo(0, 20);
+
+        // hide empty
+       if(infos.size() > 0){
+           ((TextView)v.findViewById(android.R.id.empty)).setVisibility(View.GONE);
+       }
+
+       // infos are in array in wrong order
+       Collections.reverse(infos);
+
+       mAdapter = new InfoArrayAdapter( getActivity(), R.layout.layout_info_list_item, infos );
+       mList.setAdapter(mAdapter);
+
+       return v;
     }
 
     @Override

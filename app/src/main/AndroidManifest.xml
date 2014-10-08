@@ -12,12 +12,12 @@
     <permission android:name="com.example.gcm.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
     <uses-permission android:name="com.example.gcm.permission.C2D_MESSAGE" />
-
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".InLiveApplication"
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/ic_action_logo"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
@@ -36,6 +36,11 @@
             android:label="@string/title_activity_login" >
         </activity>
 
+        <!-- Update service -->
+        <receiver android:name=".modules.UpdateBroadcastReceiver" />
+        <service android:name=".modules.UpdateIntentService" />
+
+        <!-- Receiver -->
         <receiver
             android:name=".modules.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >

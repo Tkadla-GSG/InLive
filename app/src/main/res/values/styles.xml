@@ -12,6 +12,7 @@
         <item name="android:actionModeSplitBackground">@drawable/cab_background_bottom_inlive</item>
         <item name="android:actionModeCloseButtonStyle">@style/ActionButton.CloseMode.Inlive</item>
         <item name="android:windowContentOverlay">@null</item>
+        <item name="android:icon">@drawable/ic_action_logo</item>
 
         <item name="android:textViewStyle">@style/AppTheme.TextView</item>
     </style>

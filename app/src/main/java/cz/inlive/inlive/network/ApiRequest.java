@@ -10,15 +10,15 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Response;
-    import com.android.volley.toolbox.HttpHeaderParser;
-    import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.JsonObjectRequest;
 
-    import org.json.JSONException;
-    import org.json.JSONObject;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-    import java.io.UnsupportedEncodingException;
-    import java.util.HashMap;
-    import java.util.Map;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 
 import cz.inlive.inlive.utils.Log;
 
@@ -30,42 +30,16 @@ import cz.inlive.inlive.utils.Log;
      */
     public class ApiRequest extends JsonObjectRequest {
 
-    private String mUsername;
-    private String mPassword;
-
     public ApiRequest(int method, String url, JSONObject jsonRequest,
                       Response.Listener<JSONObject> listener,
-                      Response.ErrorListener errorListener, String username, String password) {
+                      Response.ErrorListener errorListener) {
         super(method, url, jsonRequest, listener, errorListener);
-
-        mUsername = username;
-        mPassword = password;
     }
 
     public ApiRequest(String url, JSONObject jsonRequest,
                       Response.Listener<JSONObject> listener,
-                      Response.ErrorListener errorListener, String username, String password) {
+                      Response.ErrorListener errorListener) {
         super(url, jsonRequest, listener, errorListener);
-
-        mUsername = username;
-        mPassword = password;
-    }
-
-    @Override
-    public Map<String, String> getHeaders() throws AuthFailureError {
-        return createBasicAuthHeader(mUsername, mPassword);
-    }
-
-    Map<String, String> createBasicAuthHeader(String username, String password) {
-        Map<String, String> headerMap = new HashMap<String, String>();
-
-        String credentials = username + ":" + password;
-        String encodedCredentials = Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
-        Log.d("Credentials", encodedCredentials);
-        headerMap.put("X-Authorization", encodedCredentials);
-        headerMap.put("Content-type", "text/html");
-
-        return headerMap;
     }
 
     /**
