@@ -14,6 +14,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
 import android.provider.SyncStateContract;
 import android.support.v13.app.FragmentPagerAdapter;
@@ -116,15 +117,22 @@ public class LandingPageActivity extends Activity implements ActionBar.TabListen
 
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,
-                updateTime.getTimeInMillis(),
+                updateTime.getTimeInMillis() + Constants.HOUR_MILIES,
                 Constants.UPDATE_DELAY,
                 pendingIntent);
+
 
         Log.d("MyActivity", "Set alarmManager.setRepeating to: " + updateTime.getTime().toLocaleString());
 
         context.startService( new Intent(this, UpdateIntentService.class) );
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        startService( new Intent(this, UpdateIntentService.class) );
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

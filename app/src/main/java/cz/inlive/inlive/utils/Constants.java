@@ -28,6 +28,8 @@ public class Constants {
     //Default slack for first update
     public static final long UPDATE_SLACK = 1 * 7 * 24 * 60 * 60 * 1000; // 1 week in milies
 
+    public static final long HOUR_MILIES =  5 * 60 * 1000;  //1 * 60 * 60 * 1000;
+
     //Default time delay for update service
     public static final long UPDATE_DELAY = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
 }
